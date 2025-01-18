@@ -118,7 +118,6 @@ This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-## Keywords for SEO
 - **Update Package Managers Automatically**
 - **All-in-One Update Script**
 - **Cross-Shell Package Manager Updater**
