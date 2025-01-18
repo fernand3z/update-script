@@ -19,6 +19,7 @@ The installation process automatically detects your shell and sets up the approp
   - **Nix**
   - **Paru**
   - **Yay**
+  - **Snap**
   - System package managers (**apt**, **dnf**, or **pacman**).
 - Automatically installs the script relevant to your shell.
 - Lightweight and easy to set up.
