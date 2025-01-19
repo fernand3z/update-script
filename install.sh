@@ -2,6 +2,12 @@
 
 echo "Detecting shell type..."
 
+# Ensure the ~/scripts directory exists
+if [ ! -d "$HOME/scripts" ]; then
+    echo "Creating ~/scripts directory..."
+    mkdir -p "$HOME/scripts"
+fi
+
 # Detect user's shell
 case "$SHELL" in
     *zsh)
