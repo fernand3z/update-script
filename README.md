@@ -37,6 +37,10 @@ cd update-script
 The installation script automatically detects your shell and installs the corresponding script:
 
 ```bash
+chmod +x install.sh
+```
+
+```bash
 ./install.sh
 ```
 
