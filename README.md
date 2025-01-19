@@ -44,7 +44,8 @@ The installation script automatically detects your shell and installs the corres
 - If your shell is not detected, manually choose the script from the `scripts/` folder.
 
 ### Step 3: Add Alias to Your Shell Configuration
-To simplify usage, add an alias to your shell configuration:
+To simplify usage, add an alias to your shell configuration
+(e.g., `nano ~/.zshrc` for Zsh):
 
 #### For Zsh:
 ```zsh
@@ -69,7 +70,7 @@ alias upgrade = ~/scripts/update_packages
 Save and reload your shell configuration (e.g., `source ~/.zshrc` for Zsh).
 
 ### Step 4: Run the Script
-Use the `upgrade` command to update all your package managers effortlessly:
+Use the `upgrade`command to update all your package managers effortlessly:
 
 ```bash
 upgrade
@@ -77,7 +78,7 @@ upgrade
 
 ---
 
-## SEO-Optimized Benefits
+##  Benefits
 
 ### **Automate Package Manager Updates with Ease**
 The Universal Package Updater streamlines the process of keeping your tools and system updated. Say goodbye to manually running multiple commands for each package manager. Our script does the heavy lifting for you.
