@@ -36,11 +36,11 @@ cd update-script
 ### Step 2: Run the Installation Script
 The installation script automatically detects your shell and installs the corresponding script:
 
+i. Run the command to make `install.sh` executable.
 ```bash
 chmod +x install.sh
 ```
-Run the command to make `install.sh` executable.
-
+ii. Run the command to install
 ```bash
 ./install.sh
 ```
