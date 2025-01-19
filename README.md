@@ -39,6 +39,7 @@ The installation script automatically detects your shell and installs the corres
 ```bash
 chmod +x install.sh
 ```
+Run the command to make `install.sh` executable.
 
 ```bash
 ./install.sh
