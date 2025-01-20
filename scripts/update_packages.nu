@@ -2,6 +2,10 @@
 # vim: syntax=sh
 # -*- mode: sh -*-
 
+def handle_error [name: string, msg: string] {
+    echo $"Error updating ($name): ($msg)"
+}
+
 echo "Starting package updates..."
 
 # Update and upgrade Homebrew
@@ -12,7 +16,7 @@ if (which brew | is-empty) == false {
         brew upgrade
         brew cleanup
     } catch { 
-        echo $"Error updating Homebrew: ($error.msg)"
+        handle_error "Homebrew" $error.msg
     }
 } else {
     echo "Homebrew not found. Skipping..."
@@ -24,7 +28,7 @@ if (which flatpak | is-empty) == false {
     try { 
         flatpak update -y
     } catch { 
-        echo $"Error updating Flatpak: ($error.msg)"
+        handle_error "Flatpak" $error.msg
     }
 } else {
     echo "Flatpak not found. Skipping..."
@@ -36,7 +40,7 @@ if (which snap | is-empty) == false {
     try { 
         sudo snap refresh
     } catch { 
-        echo $"Error updating Snap packages: ($error.msg)"
+        handle_error "Snap" $error.msg
     }
 } else {
     echo "Snap not found. Skipping..."
@@ -50,7 +54,7 @@ if (which nix-env | is-empty) == false {
         nix-env -u
         nix-collect-garbage -d
     } catch { 
-        echo $"Error updating Nix: ($error.msg)"
+        handle_error "Nix" $error.msg
     }
 } else {
     echo "Nix not found. Skipping..."
@@ -80,32 +84,114 @@ if (which yay | is-empty) == false {
     echo "Yay not found. Skipping..."
 }
 
-# Update system packages (apt, dnf, pacman)
+# System Package Managers
 if (which apt | is-empty) == false {
-    echo "Updating system packages with apt..."
+    echo "Updating APT packages..."
     try { 
         sudo apt update
         sudo apt upgrade -y
         sudo apt autoremove -y
     } catch { 
-        echo $"Error updating apt packages: ($error.msg)"
+        handle_error "APT" $error.msg
+    }
+} else if (which dpkg | is-empty) == false {
+    echo "Updating DPKG packages..."
+    try { 
+        sudo dpkg --configure -a
+    } catch { 
+        handle_error "DPKG" $error.msg
     }
 } else if (which dnf | is-empty) == false {
-    echo "Updating system packages with dnf..."
+    echo "Updating DNF packages..."
     try { 
         sudo dnf upgrade --refresh -y
     } catch { 
-        echo $"Error updating dnf packages: ($error.msg)"
+        handle_error "DNF" $error.msg
+    }
+} else if (which yum | is-empty) == false {
+    echo "Updating YUM packages..."
+    try { 
+        sudo yum update -y
+    } catch { 
+        handle_error "YUM" $error.msg
     }
 } else if (which pacman | is-empty) == false {
-    echo "Updating system packages with pacman..."
+    echo "Updating Pacman packages..."
     try { 
         sudo pacman -Syu --noconfirm
     } catch { 
-        echo $"Error updating pacman packages: ($error.msg)"
+        handle_error "Pacman" $error.msg
+    }
+} else if (which zypper | is-empty) == false {
+    echo "Updating Zypper packages..."
+    try { 
+        sudo zypper refresh
+        sudo zypper update -y
+    } catch { 
+        handle_error "Zypper" $error.msg
     }
 } else {
     echo "No compatible system package manager found for upgrades. Skipping..."
+}
+
+# Programming Language Package Managers
+if (which npm | is-empty) == false {
+    echo "Updating NPM packages..."
+    try { 
+        npm update -g
+    } catch { 
+        handle_error "NPM" $error.msg
+    }
+}
+
+if (which pip | is-empty) == false {
+    echo "Updating PIP packages..."
+    try { 
+        pip list --outdated --format=freeze | lines | str replace -r '^\-e' '' | split column '=' | get column0 | each { |pkg| pip install -U $pkg }
+    } catch { 
+        handle_error "PIP" $error.msg
+    }
+}
+
+if (which gem | is-empty) == false {
+    echo "Updating Ruby gems..."
+    try { 
+        gem update
+    } catch { 
+        handle_error "Ruby Gems" $error.msg
+    }
+}
+
+if (which cargo | is-empty) == false {
+    echo "Updating Cargo packages..."
+    try { 
+        cargo install-update -a
+    } catch { 
+        handle_error "Cargo" $error.msg
+    }
+}
+
+# Container and Virtualization
+if (which docker | is-empty) == false {
+    echo "Updating Docker images..."
+    try {
+        docker images | lines | skip 1 | split column ' ' | get column0 | each { |image|
+            docker pull $image
+        }
+    } catch { 
+        handle_error "Docker" $error.msg
+    }
+}
+
+if (which podman | is-empty) == false {
+    echo "Updating Podman images..."
+    try {
+        podman images | lines | skip 1 | split column ' ' | get column0 | each { |image|
+            podman pull $image
+        }
+    } catch { 
+        handle_error "Podman" $error.msg
+    }
 }
 
 echo "All package updates completed!"

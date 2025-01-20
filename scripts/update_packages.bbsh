@@ -1,0 +1,79 @@
+#!/bin/busybox sh
+
+# Use busybox built-ins where possible
+alias echo='busybox echo'
+alias grep='busybox grep'
+alias cut='busybox cut'
+alias which='busybox which'
+
+# Error handling function
+handle_error() {
+    echo "Error updating $1: $2" >&2
+}
+
+echo "Starting package updates..."
+
+# Update and upgrade Homebrew
+if which brew >/dev/null 2>&1; then
+    echo "Updating Homebrew..."
+    if ! { brew update && brew upgrade && brew cleanup; }; then
+        handle_error "Homebrew" "update failed"
+    fi
+fi
+
+# Update Flatpak packages
+if which flatpak >/dev/null 2>&1; then
+    echo "Updating Flatpak..."
+    if ! flatpak update -y; then
+        handle_error "Flatpak" "update failed"
+    fi
+fi
+
+# Update Snap packages
+if which snap >/dev/null 2>&1; then
+    echo "Updating Snap packages..."
+    if ! busybox su -c "snap refresh"; then
+        handle_error "Snap" "update failed"
+    fi
+fi
+
+# System Package Managers
+if which apt >/dev/null 2>&1; then
+    echo "Updating APT packages..."
+    if ! { busybox su -c "apt update && apt upgrade -y && apt autoremove -y"; }; then
+        handle_error "APT" "update failed"
+    fi
+elif which dpkg >/dev/null 2>&1; then
+    echo "Updating DPKG packages..."
+    if ! busybox su -c "dpkg --configure -a"; then
+        handle_error "DPKG" "configuration failed"
+    fi
+elif which dnf >/dev/null 2>&1; then
+    echo "Updating DNF packages..."
+    if ! busybox su -c "dnf upgrade --refresh -y"; then
+        handle_error "DNF" "update failed"
+    fi
+fi
+
+# Programming Language Package Managers
+if which pip >/dev/null 2>&1; then
+    echo "Updating PIP packages..."
+    if ! pip list --outdated --format=freeze | busybox grep -v '^\-e' | busybox cut -d = -f 1 | while read pkg; do
+        pip install -U "$pkg"
+    done; then
+        handle_error "PIP" "update failed"
+    fi
+fi
+
+# Container and Virtualization
+if which docker >/dev/null 2>&1; then
+    echo "Updating Docker images..."
+    docker images | busybox grep -v REPOSITORY | while read line; do
+        image=$(echo "$line" | busybox awk '{print $1}')
+        if ! docker pull "$image"; then
+            handle_error "Docker" "failed to update $image"
+        fi
+    done
+fi
+
+echo "All package updates completed!" 
