@@ -148,6 +148,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 ---
 
+## Keywords
 - **Update Package Managers Automatically**
 - **All-in-One Update Script**
 - **Cross-Shell Package Manager Updater**
