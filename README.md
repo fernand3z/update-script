@@ -63,30 +63,104 @@ chmod +x install.sh
 - If your shell is not detected, manually choose the script from the `scripts/` folder.
 
 ### Step 3: Add Alias to Your Shell Configuration
-To simplify usage, add an alias to your shell configuration
-(e.g., `nano ~/.zshrc` for Zsh):
+To simplify usage, add an alias to your shell configuration file:
 
 #### For Zsh:
 ```zsh
+# Add to ~/.zshrc
 alias upgrade="~/scripts/update_packages"
 ```
 
 #### For Bash:
 ```bash
+# Add to ~/.bashrc or ~/.bash_profile
 alias upgrade="~/scripts/update_packages"
 ```
 
 #### For Fish:
 ```fish
+# Add to ~/.config/fish/config.fish
 alias upgrade="~/scripts/update_packages"
 ```
 
 #### For NuShell:
 ```nu
+# Add to ~/.config/nushell/config.nu
 alias upgrade = ~/scripts/update_packages
 ```
 
-Save and reload your shell configuration (e.g., `source ~/.zshrc` for Zsh).
+#### For Korn Shell (KSH):
+```ksh
+# Add to ~/.kshrc
+alias upgrade="~/scripts/update_packages"
+```
+
+#### For C Shell (CSH):
+```csh
+# Add to ~/.cshrc
+alias upgrade ~/scripts/update_packages
+```
+
+#### For Dash:
+```sh
+# Add to ~/.dashrc or ~/.profile
+alias upgrade="~/scripts/update_packages"
+```
+
+#### For Elvish:
+```elvish
+# Add to ~/.elvish/rc.elv
+fn upgrade { ~/scripts/update_packages }
+```
+
+#### For Xonsh:
+```python
+# Add to ~/.xonshrc
+aliases['upgrade'] = '~/scripts/update_packages'
+```
+
+#### For BusyBox:
+```sh
+# Add to ~/.profile or /etc/profile
+alias upgrade="~/scripts/update_packages"
+```
+
+#### For POSIX Shell:
+```sh
+# Add to ~/.profile
+alias upgrade="~/scripts/update_packages"
+```
+
+After adding the alias, reload your shell configuration:
+
+```bash
+# For Zsh
+source ~/.zshrc
+
+# For Bash
+source ~/.bashrc  # or source ~/.bash_profile
+
+# For Fish
+source ~/.config/fish/config.fish
+
+# For NuShell
+source ~/.config/nushell/config.nu
+
+# For KSH
+source ~/.kshrc
+
+# For CSH
+source ~/.cshrc
+
+# For Dash/POSIX/BusyBox
+. ~/.profile
+
+# For Elvish
+exec elvish
+
+# For Xonsh
+source ~/.xonshrc
+```
 
 ### Step 4: Run the Script
 Use the `upgrade`command to update all your package managers effortlessly:
