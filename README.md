@@ -126,7 +126,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Screenshot
 
-![Screenshot](images/screenshot.png)
+![Screenshot](images/Screenshot.png)
 
 ---
 
