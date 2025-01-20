@@ -40,7 +40,10 @@ The **Universal Package Updater** is a powerful, all-in-one script designed to a
 Clone the repository into your system:
 
 ```bash
+# Latest version
 git clone https://github.com/fernand3z/update-script.git
+# OR specific version (recommended)
+git clone --branch v2.0.0 https://github.com/fernand3z/update-script.git
 cd update-script
 ```
 
