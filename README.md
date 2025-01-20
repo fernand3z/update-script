@@ -124,6 +124,12 @@ This project is licensed under the [MIT License](LICENSE).
 
 ---
 
+## Screenshot
+
+![Screenshot](images/screenshot.png)
+
+---
+
 - **Update Package Managers Automatically**
 - **All-in-One Update Script**
 - **Cross-Shell Package Manager Updater**
