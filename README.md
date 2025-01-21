@@ -168,7 +168,11 @@ Use the `upgrade`command to update all your package managers effortlessly:
 ```bash
 upgrade
 ```
+### Remove the Script
 
+```bash
+rm -rf ~/scripts
+```
 ---
 
 ##  Benefits
