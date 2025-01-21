@@ -171,7 +171,7 @@ upgrade
 ### Remove the Script
 
 ```bash
-rm -rf ~/scripts
+rm -rf ~/scripts ~/update-script
 ```
 ---
 
