@@ -1,5 +1,5 @@
 # Universal Package Updater
-![Repository Image](images/Screenshot1.png)
+
 The **Universal Package Updater** is a powerful, all-in-one script designed to automate updates across multiple package managers. Whether you're using **Homebrew**, **Flatpak**, **Nix**, **Paru**, **Yay**, or system-level package managers like **apt**, **dnf**, **pacman**, this script ensures your system is up-to-date effortlessly.
 
 ## Why Use Universal Package Updater?
