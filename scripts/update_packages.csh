@@ -1,5 +1,21 @@
 #!/bin/csh -f
 
+# Request sudo privileges upfront
+echo "Requesting administrator privileges..."
+sudo -v
+if ($status != 0) then
+    echo "Failed to obtain administrator privileges. Exiting."
+    exit 1
+endif
+
+# Keep sudo timestamp updated in the background
+( while (1)
+    sudo -n true
+    sleep 60
+    kill -0 $$ >& /dev/null
+    if ($status != 0) exit
+end ) >& /dev/null &
+
 # Error handling function
 alias handle_error 'echo "Error updating $1: $2" > /dev/stderr'
 

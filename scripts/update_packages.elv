@@ -1,5 +1,21 @@
 #!/usr/bin/env elvish
 
+# Request sudo privileges upfront
+echo "Requesting administrator privileges..."
+if (not (sudo -v)) {
+    echo "Failed to obtain administrator privileges. Exiting." >&2
+    exit 1
+}
+
+# Keep sudo timestamp updated in the background
+go { while $true {
+    sudo -n true
+    sleep 60
+    if (not (ps -p (pid) >/dev/null 2>&1)) {
+        exit
+    }
+} } &>/dev/null
+
 fn handle-error {|name msg|
     echo "Error updating "$name": "$msg"" >&2
 }

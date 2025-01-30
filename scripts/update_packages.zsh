@@ -2,6 +2,13 @@
 
 # Update script for multiple package managers
 
+# Request sudo privileges upfront
+echo "Requesting administrator privileges..."
+sudo -v || { echo "Failed to obtain administrator privileges. Exiting."; exit 1; }
+
+# Keep sudo timestamp updated in the background
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+
 echo "Starting package updates..."
 
 # Update and upgrade Homebrew

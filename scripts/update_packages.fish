@@ -1,5 +1,23 @@
 #!/usr/bin/env fish
 
+# Request sudo privileges upfront
+echo "Requesting administrator privileges..."
+if not sudo -v
+    echo "Failed to obtain administrator privileges. Exiting." >&2
+    exit 1
+end
+
+# Keep sudo timestamp updated in the background
+begin
+    while true
+        sudo -n true
+        sleep 60
+        if not kill -0 %self
+            exit
+        end
+    end
+end &>/dev/null &
+
 function handle_error
     echo "Error updating $argv[1]: $argv[2]" >&2
 end

@@ -2,6 +2,24 @@
 # vim: syntax=sh
 # -*- mode: sh -*-
 
+# Request sudo privileges upfront
+echo "Requesting administrator privileges..."
+if (do { sudo -v } | complete).exit_code != 0 {
+    echo "Failed to obtain administrator privileges. Exiting."
+    exit 1
+}
+
+# Keep sudo timestamp updated in the background
+do -bg {
+    loop {
+        sudo -n true
+        sleep 60sec
+        if (ps | where pid == $nu.pid | is-empty) {
+            exit
+        }
+    }
+} | ignore
+
 def handle_error [name: string, msg: string] {
     echo $"Error updating ($name): ($msg)"
 }

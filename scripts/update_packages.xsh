@@ -1,6 +1,30 @@
 #!/usr/bin/env xonsh
 
+import os
 import sys
+import subprocess
+from threading import Thread
+import time
+
+# Request sudo privileges upfront
+print("Requesting administrator privileges...")
+try:
+    subprocess.run(['sudo', '-v'], check=True)
+except subprocess.CalledProcessError:
+    print("Failed to obtain administrator privileges. Exiting.", file=sys.stderr)
+    sys.exit(1)
+
+# Keep sudo timestamp updated in the background
+def keep_sudo():
+    while True:
+        try:
+            subprocess.run(['sudo', '-n', 'true'], check=False)
+            time.sleep(60)
+            os.kill(os.getpid(), 0)
+        except:
+            break
+
+Thread(target=keep_sudo, daemon=True).start()
 
 def handle_error(name, msg):
     print(f"Error updating {name}: {msg}", file=sys.stderr)
