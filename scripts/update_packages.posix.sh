@@ -19,47 +19,7 @@ handle_error() {
     echo "Error updating $1: $2"
 }
 
-# Update and upgrade Homebrew
-if command_exists brew; then
-    echo "Updating Homebrew..."
-    if ! { brew update && brew upgrade && brew cleanup; }; then
-        handle_error "Homebrew" "update failed"
-    fi
-else
-    echo "Homebrew not found. Skipping..."
-fi
-
-# Update Flatpak packages
-if command_exists flatpak; then
-    echo "Updating Flatpak..."
-    if ! flatpak update -y; then
-        handle_error "Flatpak" "update failed"
-    fi
-else
-    echo "Flatpak not found. Skipping..."
-fi
-
-# Update Snap packages
-if command_exists snap; then
-    echo "Updating Snap packages..."
-    if ! sudo snap refresh; then
-        handle_error "Snap" "update failed"
-    fi
-else
-    echo "Snap not found. Skipping..."
-fi
-
-# Update Nix packages
-if command_exists nix-env; then
-    echo "Updating Nix..."
-    if ! { nix-channel --update && nix-env -u && nix-collect-garbage -d; }; then
-        handle_error "Nix" "update failed"
-    fi
-else
-    echo "Nix not found. Skipping..."
-fi
-
-# System Package Managers
+# System Package Managers (requiring sudo)
 if command_exists apt; then
     echo "Updating APT packages..."
     if ! { sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y; }; then
@@ -110,10 +70,37 @@ elif command_exists pkgtool; then
     if ! { sudo slackpkg update && sudo slackpkg upgrade-all; }; then
         handle_error "Slackware" "update failed"
     fi
-elif command_exists guix; then
-    echo "Updating Guix packages..."
-    if ! { guix pull && guix upgrade; }; then
-        handle_error "Guix" "update failed"
+fi
+
+# Update Snap packages (requires sudo)
+if command_exists snap; then
+    echo "Updating Snap packages..."
+    if ! sudo snap refresh; then
+        handle_error "Snap" "update failed"
+    fi
+fi
+
+# Update and upgrade Homebrew
+if command_exists brew; then
+    echo "Updating Homebrew..."
+    if ! { brew update && brew upgrade && brew cleanup; }; then
+        handle_error "Homebrew" "update failed"
+    fi
+fi
+
+# Update Flatpak packages
+if command_exists flatpak; then
+    echo "Updating Flatpak..."
+    if ! flatpak update -y; then
+        handle_error "Flatpak" "update failed"
+    fi
+fi
+
+# Update Nix packages
+if command_exists nix-env; then
+    echo "Updating Nix..."
+    if ! { nix-channel --update && nix-env -u && nix-collect-garbage -d; }; then
+        handle_error "Nix" "update failed"
     fi
 fi
 

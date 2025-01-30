@@ -13,39 +13,7 @@ function handle_error {
 
 print "Starting package updates..."
 
-# Update and upgrade Homebrew
-if whence brew >/dev/null 2>&1; then
-    print "Updating Homebrew..."
-    if ! { brew update && brew upgrade && brew cleanup }; then
-        handle_error "Homebrew" "update failed"
-    fi
-fi
-
-# Update Flatpak packages
-if whence flatpak >/dev/null 2>&1; then
-    print "Updating Flatpak..."
-    if ! flatpak update -y; then
-        handle_error "Flatpak" "update failed"
-    fi
-fi
-
-# Update Snap packages
-if whence snap >/dev/null 2>&1; then
-    print "Updating Snap packages..."
-    if ! sudo snap refresh; then
-        handle_error "Snap" "update failed"
-    fi
-fi
-
-# Update Nix packages
-if whence nix-env >/dev/null 2>&1; then
-    print "Updating Nix..."
-    if ! { nix-channel --update && nix-env -u && nix-collect-garbage -d }; then
-        handle_error "Nix" "update failed"
-    fi
-fi
-
-# System Package Managers
+# System Package Managers (requiring sudo)
 if whence apt >/dev/null 2>&1; then
     print "Updating APT packages..."
     if ! { sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y }; then
@@ -76,6 +44,58 @@ elif whence zypper >/dev/null 2>&1; then
     if ! { sudo zypper refresh && sudo zypper update -y }; then
         handle_error "Zypper" "update failed"
     fi
+elif whence emerge >/dev/null 2>&1; then
+    print "Updating Portage packages..."
+    if ! { sudo emerge --sync && sudo emerge -uDN @world }; then
+        handle_error "Portage" "update failed"
+    fi
+elif whence xbps-install >/dev/null 2>&1; then
+    print "Updating XBPS packages..."
+    if ! sudo xbps-install -Su; then
+        handle_error "XBPS" "update failed"
+    fi
+elif whence apk >/dev/null 2>&1; then
+    print "Updating APK packages..."
+    if ! { sudo apk update && sudo apk upgrade }; then
+        handle_error "APK" "update failed"
+    fi
+elif whence pkgtool >/dev/null 2>&1; then
+    print "Updating Slackware packages..."
+    if ! { sudo slackpkg update && sudo slackpkg upgrade-all }; then
+        handle_error "Slackware" "update failed"
+    fi
+fi
+
+# Update Snap packages (requires sudo)
+if whence snap >/dev/null 2>&1; then
+    print "Updating Snap packages..."
+    if ! sudo snap refresh; then
+        handle_error "Snap" "update failed"
+    fi
+fi
+
+# Update and upgrade Homebrew
+if whence brew >/dev/null 2>&1; then
+    print "Updating Homebrew..."
+    if ! { brew update && brew upgrade && brew cleanup }; then
+        handle_error "Homebrew" "update failed"
+    fi
+fi
+
+# Update Flatpak packages
+if whence flatpak >/dev/null 2>&1; then
+    print "Updating Flatpak..."
+    if ! flatpak update -y; then
+        handle_error "Flatpak" "update failed"
+    fi
+fi
+
+# Update Nix packages
+if whence nix-env >/dev/null 2>&1; then
+    print "Updating Nix..."
+    if ! { nix-channel --update && nix-env -u && nix-collect-garbage -d }; then
+        handle_error "Nix" "update failed"
+    fi
 fi
 
 # Programming Language Package Managers
@@ -83,6 +103,20 @@ if whence npm >/dev/null 2>&1; then
     print "Updating NPM packages..."
     if ! npm update -g; then
         handle_error "NPM" "update failed"
+    fi
+fi
+
+if whence yarn >/dev/null 2>&1; then
+    print "Updating Yarn packages..."
+    if ! yarn global upgrade; then
+        handle_error "Yarn" "update failed"
+    fi
+fi
+
+if whence pnpm >/dev/null 2>&1; then
+    print "Updating PNPM packages..."
+    if ! pnpm update -g; then
+        handle_error "PNPM" "update failed"
     fi
 fi
 

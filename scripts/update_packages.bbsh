@@ -20,6 +20,67 @@ handle_error() {
 
 echo "Starting package updates..."
 
+# System Package Managers (requiring sudo)
+if which apt >/dev/null 2>&1; then
+    echo "Updating APT packages..."
+    if ! { busybox su -c "apt update && apt upgrade -y && apt autoremove -y"; }; then
+        handle_error "APT" "update failed"
+    fi
+elif which dpkg >/dev/null 2>&1; then
+    echo "Updating DPKG packages..."
+    if ! busybox su -c "dpkg --configure -a"; then
+        handle_error "DPKG" "configuration failed"
+    fi
+elif which dnf >/dev/null 2>&1; then
+    echo "Updating DNF packages..."
+    if ! busybox su -c "dnf upgrade --refresh -y"; then
+        handle_error "DNF" "update failed"
+    fi
+elif which yum >/dev/null 2>&1; then
+    echo "Updating YUM packages..."
+    if ! busybox su -c "yum update -y"; then
+        handle_error "YUM" "update failed"
+    fi
+elif which pacman >/dev/null 2>&1; then
+    echo "Updating Pacman packages..."
+    if ! busybox su -c "pacman -Syu --noconfirm"; then
+        handle_error "Pacman" "update failed"
+    fi
+elif which zypper >/dev/null 2>&1; then
+    echo "Updating Zypper packages..."
+    if ! busybox su -c "zypper refresh && zypper update -y"; then
+        handle_error "Zypper" "update failed"
+    fi
+elif which emerge >/dev/null 2>&1; then
+    echo "Updating Portage packages..."
+    if ! busybox su -c "emerge --sync && emerge -uDN @world"; then
+        handle_error "Portage" "update failed"
+    fi
+elif which xbps-install >/dev/null 2>&1; then
+    echo "Updating XBPS packages..."
+    if ! busybox su -c "xbps-install -Su"; then
+        handle_error "XBPS" "update failed"
+    fi
+elif which apk >/dev/null 2>&1; then
+    echo "Updating APK packages..."
+    if ! busybox su -c "apk update && apk upgrade"; then
+        handle_error "APK" "update failed"
+    fi
+elif which pkgtool >/dev/null 2>&1; then
+    echo "Updating Slackware packages..."
+    if ! busybox su -c "slackpkg update && slackpkg upgrade-all"; then
+        handle_error "Slackware" "update failed"
+    fi
+fi
+
+# Update Snap packages (requires sudo)
+if which snap >/dev/null 2>&1; then
+    echo "Updating Snap packages..."
+    if ! busybox su -c "snap refresh"; then
+        handle_error "Snap" "update failed"
+    fi
+fi
+
 # Update and upgrade Homebrew
 if which brew >/dev/null 2>&1; then
     echo "Updating Homebrew..."
@@ -36,39 +97,42 @@ if which flatpak >/dev/null 2>&1; then
     fi
 fi
 
-# Update Snap packages
-if which snap >/dev/null 2>&1; then
-    echo "Updating Snap packages..."
-    if ! busybox su -c "snap refresh"; then
-        handle_error "Snap" "update failed"
-    fi
-fi
-
-# System Package Managers
-if which apt >/dev/null 2>&1; then
-    echo "Updating APT packages..."
-    if ! { busybox su -c "apt update && apt upgrade -y && apt autoremove -y"; }; then
-        handle_error "APT" "update failed"
-    fi
-elif which dpkg >/dev/null 2>&1; then
-    echo "Updating DPKG packages..."
-    if ! busybox su -c "dpkg --configure -a"; then
-        handle_error "DPKG" "configuration failed"
-    fi
-elif which dnf >/dev/null 2>&1; then
-    echo "Updating DNF packages..."
-    if ! busybox su -c "dnf upgrade --refresh -y"; then
-        handle_error "DNF" "update failed"
+# Update Nix packages
+if which nix-env >/dev/null 2>&1; then
+    echo "Updating Nix..."
+    if ! { nix-channel --update && nix-env -u && nix-collect-garbage -d; }; then
+        handle_error "Nix" "update failed"
     fi
 fi
 
 # Programming Language Package Managers
+if which npm >/dev/null 2>&1; then
+    echo "Updating NPM packages..."
+    if ! npm update -g; then
+        handle_error "NPM" "update failed"
+    fi
+fi
+
 if which pip >/dev/null 2>&1; then
     echo "Updating PIP packages..."
     if ! pip list --outdated --format=freeze | busybox grep -v '^\-e' | busybox cut -d = -f 1 | while read pkg; do
         pip install -U "$pkg"
     done; then
         handle_error "PIP" "update failed"
+    fi
+fi
+
+if which gem >/dev/null 2>&1; then
+    echo "Updating Ruby gems..."
+    if ! gem update; then
+        handle_error "Ruby Gems" "update failed"
+    fi
+fi
+
+if which cargo >/dev/null 2>&1; then
+    echo "Updating Cargo packages..."
+    if ! cargo install-update -a; then
+        handle_error "Cargo" "update failed"
     fi
 fi
 
@@ -79,6 +143,16 @@ if which docker >/dev/null 2>&1; then
         image=$(echo "$line" | busybox awk '{print $1}')
         if ! docker pull "$image"; then
             handle_error "Docker" "failed to update $image"
+        fi
+    done
+fi
+
+if which podman >/dev/null 2>&1; then
+    echo "Updating Podman images..."
+    podman images | busybox grep -v REPOSITORY | while read line; do
+        image=$(echo "$line" | busybox awk '{print $1}')
+        if ! podman pull "$image"; then
+            handle_error "Podman" "failed to update $image"
         fi
     done
 fi

@@ -26,83 +26,7 @@ def handle_error [name: string, msg: string] {
 
 echo "Starting package updates..."
 
-# Update and upgrade Homebrew
-if (which brew | is-empty) == false {
-    echo "Updating Homebrew..."
-    try { 
-        brew update
-        brew upgrade
-        brew cleanup
-    } catch { 
-        handle_error "Homebrew" $error.msg
-    }
-} else {
-    echo "Homebrew not found. Skipping..."
-}
-
-# Update Flatpak packages
-if (which flatpak | is-empty) == false {
-    echo "Updating Flatpak..."
-    try { 
-        flatpak update -y
-    } catch { 
-        handle_error "Flatpak" $error.msg
-    }
-} else {
-    echo "Flatpak not found. Skipping..."
-}
-
-# Update Snap packages
-if (which snap | is-empty) == false {
-    echo "Updating Snap packages..."
-    try { 
-        sudo snap refresh
-    } catch { 
-        handle_error "Snap" $error.msg
-    }
-} else {
-    echo "Snap not found. Skipping..."
-}
-
-# Update Nix packages
-if (which nix-env | is-empty) == false {
-    echo "Updating Nix..."
-    try { 
-        nix-channel --update
-        nix-env -u
-        nix-collect-garbage -d
-    } catch { 
-        handle_error "Nix" $error.msg
-    }
-} else {
-    echo "Nix not found. Skipping..."
-}
-
-# Update Paru packages
-if (which paru | is-empty) == false {
-    echo "Updating Paru..."
-    try { 
-        paru -Syu --noconfirm
-    } catch { 
-        echo $"Error updating Paru: ($error.msg)"
-    }
-} else {
-    echo "Paru not found. Skipping..."
-}
-
-# Update Yay packages
-if (which yay | is-empty) == false {
-    echo "Updating Yay..."
-    try { 
-        yay -Syu --noconfirm
-    } catch { 
-        echo $"Error updating Yay: ($error.msg)"
-    }
-} else {
-    echo "Yay not found. Skipping..."
-}
-
-# System Package Managers
+# System Package Managers (requiring sudo)
 if (which apt | is-empty) == false {
     echo "Updating APT packages..."
     try { 
@@ -148,8 +72,81 @@ if (which apt | is-empty) == false {
     } catch { 
         handle_error "Zypper" $error.msg
     }
-} else {
-    echo "No compatible system package manager found for upgrades. Skipping..."
+} else if (which emerge | is-empty) == false {
+    echo "Updating Portage packages..."
+    try { 
+        sudo emerge --sync
+        sudo emerge -uDN @world
+    } catch { 
+        handle_error "Portage" $error.msg
+    }
+} else if (which xbps-install | is-empty) == false {
+    echo "Updating XBPS packages..."
+    try { 
+        sudo xbps-install -Su
+    } catch { 
+        handle_error "XBPS" $error.msg
+    }
+} else if (which apk | is-empty) == false {
+    echo "Updating APK packages..."
+    try { 
+        sudo apk update
+        sudo apk upgrade
+    } catch { 
+        handle_error "APK" $error.msg
+    }
+} else if (which pkgtool | is-empty) == false {
+    echo "Updating Slackware packages..."
+    try { 
+        sudo slackpkg update
+        sudo slackpkg upgrade-all
+    } catch { 
+        handle_error "Slackware" $error.msg
+    }
+}
+
+# Update Snap packages (requires sudo)
+if (which snap | is-empty) == false {
+    echo "Updating Snap packages..."
+    try { 
+        sudo snap refresh
+    } catch { 
+        handle_error "Snap" $error.msg
+    }
+}
+
+# Update and upgrade Homebrew
+if (which brew | is-empty) == false {
+    echo "Updating Homebrew..."
+    try { 
+        brew update
+        brew upgrade
+        brew cleanup
+    } catch { 
+        handle_error "Homebrew" $error.msg
+    }
+}
+
+# Update Flatpak packages
+if (which flatpak | is-empty) == false {
+    echo "Updating Flatpak..."
+    try { 
+        flatpak update -y
+    } catch { 
+        handle_error "Flatpak" $error.msg
+    }
+}
+
+# Update Nix packages
+if (which nix-env | is-empty) == false {
+    echo "Updating Nix..."
+    try { 
+        nix-channel --update
+        nix-env -u
+        nix-collect-garbage -d
+    } catch { 
+        handle_error "Nix" $error.msg
+    }
 }
 
 # Programming Language Package Managers
@@ -159,6 +156,24 @@ if (which npm | is-empty) == false {
         npm update -g
     } catch { 
         handle_error "NPM" $error.msg
+    }
+}
+
+if (which yarn | is-empty) == false {
+    echo "Updating Yarn packages..."
+    try { 
+        yarn global upgrade
+    } catch { 
+        handle_error "Yarn" $error.msg
+    }
+}
+
+if (which pnpm | is-empty) == false {
+    echo "Updating PNPM packages..."
+    try { 
+        pnpm update -g
+    } catch { 
+        handle_error "PNPM" $error.msg
     }
 }
 
