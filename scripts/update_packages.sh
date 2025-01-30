@@ -103,8 +103,10 @@ fi
 
 if command -v pip &> /dev/null; then
     echo "Updating PIP packages..."
-    pip list --outdated --format=freeze | cut -d= -f1 | xargs -n1 pip install -U
+    pip install --upgrade pip
+    pip freeze --local | cut -d= -f1 | xargs -n1 pip install --upgrade
 fi
+
 
 if command -v poetry &> /dev/null; then
     echo "Updating Poetry packages..."
