@@ -102,10 +102,15 @@ if command -v pnpm &> /dev/null; then
 fi
 
 if command -v pip &> /dev/null; then
-    echo "Updating PIP packages..."
-    pip install --upgrade pip
-    pip freeze --local | cut -d= -f1 | xargs -n1 pip install --upgrade
+    echo "Updating PIP and all installed Python packages..."
+
+    # Upgrade pip first
+    python3 -m pip install --upgrade pip
+
+    # Upgrade all packages while resolving dependencies properly
+    pip list --outdated --format=freeze | awk -F '==' '{print $1}' | xargs -r python3 -m pip install --upgrade
 fi
+
 
 
 if command -v poetry &> /dev/null; then
