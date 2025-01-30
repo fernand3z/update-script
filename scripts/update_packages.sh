@@ -4,99 +4,85 @@
 echo "Requesting administrator privileges..."
 sudo -v || { echo "Failed to obtain administrator privileges. Exiting."; exit 1; }
 
-# Keep sudo timestamp updated in the background
+# Keep sudo timestamp updated
 while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 echo "Starting package updates..."
 
-# System Package Managers (requiring sudo)
+# System Package Managers
 if command -v apt &> /dev/null; then
     echo "Updating APT packages..."
-    try {
-        sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y
-    } catch {
-        echo "Error updating APT packages"
-    }
-elif command -v dpkg &> /dev/null; then
+    sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y || echo "Error updating APT packages"
+fi
+
+if command -v dpkg &> /dev/null; then
     echo "Updating DPKG packages..."
     sudo dpkg --configure -a
-elif command -v dnf &> /dev/null; then
+fi
+
+if command -v dnf &> /dev/null; then
     echo "Updating DNF packages..."
     sudo dnf upgrade --refresh -y
-elif command -v yum &> /dev/null; then
+fi
+
+if command -v yum &> /dev/null; then
     echo "Updating YUM packages..."
     sudo yum update -y
-elif command -v rpm &> /dev/null; then
-    echo "Checking RPM packages..."
-    sudo rpm -qa
-elif command -v pacman &> /dev/null; then
+fi
+
+if command -v pacman &> /dev/null; then
     echo "Updating Pacman packages..."
     sudo pacman -Syu --noconfirm
-elif command -v zypper &> /dev/null; then
+fi
+
+if command -v zypper &> /dev/null; then
     echo "Updating Zypper packages..."
     sudo zypper refresh && sudo zypper update -y
-elif command -v emerge &> /dev/null; then
+fi
+
+if command -v emerge &> /dev/null; then
     echo "Updating Portage packages..."
     sudo emerge --sync && sudo emerge -uDN @world
-elif command -v xbps-install &> /dev/null; then
+fi
+
+if command -v xbps-install &> /dev/null; then
     echo "Updating XBPS packages..."
     sudo xbps-install -Su
-elif command -v apk &> /dev/null; then
+fi
+
+if command -v apk &> /dev/null; then
     echo "Updating APK packages..."
     sudo apk update && sudo apk upgrade
-elif command -v pkgtool &> /dev/null; then
-    echo "Updating Slackware packages..."
-    sudo slackpkg update && sudo slackpkg upgrade-all
 fi
 
-# Update Snap packages (requires sudo)
 if command -v snap &> /dev/null; then
     echo "Updating Snap packages..."
-    if ! sudo snap refresh; then
-        echo "Error updating Snap packages"
-    fi
-else
-    echo "Snap not found. Skipping..."
+    sudo snap refresh || echo "Error updating Snap packages"
 fi
 
-# Update and upgrade Homebrew
 if command -v brew &> /dev/null; then
     echo "Updating Homebrew..."
     brew update && brew upgrade && brew cleanup
-else
-    echo "Homebrew not found. Skipping..."
 fi
 
-# Update Flatpak packages
 if command -v flatpak &> /dev/null; then
     echo "Updating Flatpak..."
     flatpak update -y
-else
-    echo "Flatpak not found. Skipping..."
 fi
 
-# Update Nix packages
 if command -v nix-env &> /dev/null; then
     echo "Updating Nix..."
     nix-channel --update && nix-env -u && nix-collect-garbage -d
-else
-    echo "Nix not found. Skipping..."
 fi
 
-# Update Paru packages
 if command -v paru &> /dev/null; then
     echo "Updating Paru..."
     paru -Syu --noconfirm
-else
-    echo "Paru not found. Skipping..."
 fi
 
-# Update Yay packages
 if command -v yay &> /dev/null; then
     echo "Updating Yay..."
     yay -Syu --noconfirm
-else
-    echo "Yay not found. Skipping..."
 fi
 
 # Programming Language Package Managers
@@ -117,12 +103,7 @@ fi
 
 if command -v pip &> /dev/null; then
     echo "Updating PIP packages..."
-    pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip install -U
-fi
-
-if command -v conda &> /dev/null; then
-    echo "Updating Conda packages..."
-    conda update --all -y
+    pip list --outdated --format=freeze | cut -d= -f1 | xargs -n1 pip install -U
 fi
 
 if command -v poetry &> /dev/null; then
@@ -135,21 +116,6 @@ if command -v gem &> /dev/null; then
     gem update
 fi
 
-if command -v bundle &> /dev/null; then
-    echo "Updating Bundler..."
-    bundle update
-fi
-
-if command -v mvn &> /dev/null; then
-    echo "Updating Maven packages..."
-    mvn versions:update-parent versions:update-properties
-fi
-
-if command -v gradle &> /dev/null; then
-    echo "Updating Gradle..."
-    gradle wrapper --gradle-version latest
-fi
-
 if command -v composer &> /dev/null; then
     echo "Updating Composer packages..."
     composer global update
@@ -157,53 +123,42 @@ fi
 
 if command -v go &> /dev/null; then
     echo "Updating Go packages..."
-    go get -u all
+    go install $(go list -m all | awk '{print $1}')@latest
 fi
 
 if command -v cargo &> /dev/null; then
-    echo "Updating Cargo packages..."
-    cargo install-update -a
-fi
+    echo "Checking Cargo package manager..."
 
-if command -v cpan &> /dev/null; then
-    echo "Updating CPAN packages..."
-    cpan -u
-fi
+    # Ensure cargo-update is installed first
+    if ! cargo install --list | grep -q "cargo-update"; then
+        echo "cargo-update not found. Installing..."
+        cargo install cargo-update
+    fi
 
-if command -v R &> /dev/null; then
-    echo "Updating R packages..."
-    R --quiet -e "update.packages(ask = FALSE)"
-fi
-
-if command -v cabal &> /dev/null; then
-    echo "Updating Cabal packages..."
-    cabal update && cabal upgrade
-fi
-
-if command -v stack &> /dev/null; then
-    echo "Updating Stack packages..."
-    stack upgrade && stack update
+    echo "Updating Cargo-installed packages..."
+    cargo install-update -a || echo "Error updating Cargo packages"
 fi
 
 if command -v luarocks &> /dev/null; then
     echo "Updating LuaRocks packages..."
-    luarocks install --local
+    luarocks install luarocks
+fi
+
+# Conda Package Updates
+if command -v conda &> /dev/null; then
+    echo "Updating Conda and all Conda packages..."
+    conda update -n base -c defaults conda -y && conda update --all -y
 fi
 
 # Container and Virtualization
 if command -v docker &> /dev/null; then
     echo "Updating Docker images..."
-    docker images | grep -v REPOSITORY | awk '{print $1}' | xargs -L1 docker pull
+    docker images --format "{{.Repository}}" | xargs -L1 docker pull
 fi
 
 if command -v podman &> /dev/null; then
     echo "Updating Podman images..."
-    podman images | grep -v REPOSITORY | awk '{print $1}' | xargs -L1 podman pull
-fi
-
-if command -v singularity &> /dev/null; then
-    echo "Updating Singularity..."
-    singularity pull
+    podman images --format "{{.Repository}}" | xargs -L1 podman pull
 fi
 
 if command -v minikube &> /dev/null; then
