@@ -104,12 +104,29 @@ fi
 if command -v pip &> /dev/null; then
     echo "Updating PIP and all installed Python packages..."
 
-    # Upgrade pip first
+    # Upgrade PIP itself first
     python3 -m pip install --upgrade pip
 
-    # Upgrade all packages while resolving dependencies properly
-    pip list --outdated --format=freeze | awk -F '==' '{print $1}' | xargs -r python3 -m pip install --upgrade
+    # Install system dependencies to prevent errors
+    if command -v apt &> /dev/null; then
+        sudo apt install -y cmake pkg-config libvirt-dev libpq-dev gobject-introspection
+    elif command -v dnf &> /dev/null; then
+        sudo dnf install -y cmake pkgconf-pkg-config libvirt-devel postgresql-devel gobject-introspection
+    elif command -v pacman &> /dev/null; then
+        sudo pacman -S --needed --noconfirm cmake pkg-config libvirt postgresql-libs gobject-introspection
+    fi
+
+    # Get a list of outdated packages and upgrade them
+    outdated_packages=$(pip list --outdated --format=columns | awk 'NR>2 {print $1}')
+
+    if [ -n "$outdated_packages" ]; then
+        echo "Upgrading: $outdated_packages"
+        echo "$outdated_packages" | xargs -n1 python3 -m pip install --upgrade
+    else
+        echo "All PIP packages are up to date."
+    fi
 fi
+
 
 
 
@@ -160,13 +177,25 @@ fi
 # Container and Virtualization
 if command -v docker &> /dev/null; then
     echo "Updating Docker images..."
-    docker images --format "{{.Repository}}" | xargs -L1 docker pull
+    if groups | grep -q '\bdocker\b'; then
+        docker images --format "{{.Repository}}" | xargs -L1 docker pull
+    else
+        echo "Skipping Docker updates: User lacks permissions. Run 'sudo usermod -aG docker $USER' and restart."
+    fi
 fi
+
 
 if command -v podman &> /dev/null; then
     echo "Updating Podman images..."
-    podman images --format "{{.Repository}}" | xargs -L1 podman pull
+    podman_images=$(podman images --format "{{.Repository}}")
+
+    if [ -n "$podman_images" ]; then
+        echo "$podman_images" | xargs -L1 podman pull
+    else
+        echo "No Podman images found to update."
+    fi
 fi
+
 
 if command -v minikube &> /dev/null; then
     echo "Updating Minikube..."
