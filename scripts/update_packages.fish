@@ -6,47 +6,7 @@ end
 
 echo "Starting package updates..."
 
-# Update and upgrade Homebrew
-if type -q brew
-    echo "Updating Homebrew..."
-    if not begin
-        brew update
-        and brew upgrade
-        and brew cleanup
-    end
-        handle_error "Homebrew" "update failed"
-    end
-end
-
-# Update Flatpak packages
-if type -q flatpak
-    echo "Updating Flatpak..."
-    if not flatpak update -y
-        handle_error "Flatpak" "update failed"
-    end
-end
-
-# Update Snap packages
-if type -q snap
-    echo "Updating Snap packages..."
-    if not sudo snap refresh
-        handle_error "Snap" "update failed"
-    end
-end
-
-# Update Nix packages
-if type -q nix-env
-    echo "Updating Nix..."
-    if not begin
-        nix-channel --update
-        and nix-env -u
-        and nix-collect-garbage -d
-    end
-        handle_error "Nix" "update failed"
-    end
-end
-
-# System Package Managers
+# System Package Managers (requiring sudo)
 if type -q apt
     echo "Updating APT packages..."
     if not begin
@@ -83,6 +43,75 @@ else if type -q zypper
         and sudo zypper update -y
     end
         handle_error "Zypper" "update failed"
+    end
+else if type -q emerge
+    echo "Updating Portage packages..."
+    if not begin
+        sudo emerge --sync
+        and sudo emerge -uDN @world
+    end
+        handle_error "Portage" "update failed"
+    end
+else if type -q xbps-install
+    echo "Updating XBPS packages..."
+    if not sudo xbps-install -Su
+        handle_error "XBPS" "update failed"
+    end
+else if type -q apk
+    echo "Updating APK packages..."
+    if not begin
+        sudo apk update
+        and sudo apk upgrade
+    end
+        handle_error "APK" "update failed"
+    end
+else if type -q pkgtool
+    echo "Updating Slackware packages..."
+    if not begin
+        sudo slackpkg update
+        and sudo slackpkg upgrade-all
+    end
+        handle_error "Slackware" "update failed"
+    end
+end
+
+# Update Snap packages (requires sudo)
+if type -q snap
+    echo "Updating Snap packages..."
+    if not sudo snap refresh
+        handle_error "Snap" "update failed"
+    end
+end
+
+# Update and upgrade Homebrew
+if type -q brew
+    echo "Updating Homebrew..."
+    if not begin
+        brew update
+        and brew upgrade
+        and brew cleanup
+    end
+        handle_error "Homebrew" "update failed"
+    end
+end
+
+# Update Flatpak packages
+if type -q flatpak
+    echo "Updating Flatpak..."
+    if not flatpak update -y
+        handle_error "Flatpak" "update failed"
+    end
+end
+
+# Update Nix packages
+if type -q nix-env
+    echo "Updating Nix..."
+    if not begin
+        nix-channel --update
+        and nix-env -u
+        and nix-collect-garbage -d
+    end
+        handle_error "Nix" "update failed"
     end
 end
 

@@ -6,51 +6,7 @@ fn handle-error {|name msg|
 
 echo "Starting package updates..."
 
-# Update and upgrade Homebrew
-if (has-external brew) {
-    echo "Updating Homebrew..."
-    try {
-        brew update
-        brew upgrade
-        brew cleanup
-    } catch e {
-        handle-error "Homebrew" "update failed"
-    }
-}
-
-# Update Flatpak packages
-if (has-external flatpak) {
-    echo "Updating Flatpak..."
-    try {
-        flatpak update -y
-    } catch e {
-        handle-error "Flatpak" "update failed"
-    }
-}
-
-# Update Snap packages
-if (has-external snap) {
-    echo "Updating Snap packages..."
-    try {
-        sudo snap refresh
-    } catch e {
-        handle-error "Snap" "update failed"
-    }
-}
-
-# Update Nix packages
-if (has-external nix-env) {
-    echo "Updating Nix..."
-    try {
-        nix-channel --update
-        nix-env -u
-        nix-collect-garbage -d
-    } catch e {
-        handle-error "Nix" "update failed"
-    }
-}
-
-# System Package Managers
+# System Package Managers (requiring sudo)
 if (has-external apt) {
     echo "Updating APT packages..."
     try {
@@ -73,6 +29,103 @@ if (has-external apt) {
         sudo dnf upgrade --refresh -y
     } catch e {
         handle-error "DNF" "update failed"
+    }
+} elif (has-external yum) {
+    echo "Updating YUM packages..."
+    try {
+        sudo yum update -y
+    } catch e {
+        handle-error "YUM" "update failed"
+    }
+} elif (has-external pacman) {
+    echo "Updating Pacman packages..."
+    try {
+        sudo pacman -Syu --noconfirm
+    } catch e {
+        handle-error "Pacman" "update failed"
+    }
+} elif (has-external zypper) {
+    echo "Updating Zypper packages..."
+    try {
+        sudo zypper refresh
+        sudo zypper update -y
+    } catch e {
+        handle-error "Zypper" "update failed"
+    }
+} elif (has-external emerge) {
+    echo "Updating Portage packages..."
+    try {
+        sudo emerge --sync
+        sudo emerge -uDN @world
+    } catch e {
+        handle-error "Portage" "update failed"
+    }
+} elif (has-external xbps-install) {
+    echo "Updating XBPS packages..."
+    try {
+        sudo xbps-install -Su
+    } catch e {
+        handle-error "XBPS" "update failed"
+    }
+} elif (has-external apk) {
+    echo "Updating APK packages..."
+    try {
+        sudo apk update
+        sudo apk upgrade
+    } catch e {
+        handle-error "APK" "update failed"
+    }
+} elif (has-external pkgtool) {
+    echo "Updating Slackware packages..."
+    try {
+        sudo slackpkg update
+        sudo slackpkg upgrade-all
+    } catch e {
+        handle-error "Slackware" "update failed"
+    }
+}
+
+# Update Snap packages (requires sudo)
+if (has-external snap) {
+    echo "Updating Snap packages..."
+    try {
+        sudo snap refresh
+    } catch e {
+        handle-error "Snap" "update failed"
+    }
+}
+
+# Update and upgrade Homebrew
+if (has-external brew) {
+    echo "Updating Homebrew..."
+    try {
+        brew update
+        brew upgrade
+        brew cleanup
+    } catch e {
+        handle-error "Homebrew" "update failed"
+    }
+}
+
+# Update Flatpak packages
+if (has-external flatpak) {
+    echo "Updating Flatpak..."
+    try {
+        flatpak update -y
+    } catch e {
+        handle-error "Flatpak" "update failed"
+    }
+}
+
+# Update Nix packages
+if (has-external nix-env) {
+    echo "Updating Nix..."
+    try {
+        nix-channel --update
+        nix-env -u
+        nix-collect-garbage -d
+    } catch e {
+        handle-error "Nix" "update failed"
     }
 }
 

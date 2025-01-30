@@ -5,47 +5,7 @@ alias handle_error 'echo "Error updating $1: $2" > /dev/stderr'
 
 echo "Starting package updates..."
 
-# Update and upgrade Homebrew
-which brew > /dev/null
-if ($status == 0) then
-    echo "Updating Homebrew..."
-    brew update && brew upgrade && brew cleanup
-    if ($status) then
-        handle_error "Homebrew" "update failed"
-    endif
-endif
-
-# Update Flatpak packages
-which flatpak > /dev/null
-if ($status == 0) then
-    echo "Updating Flatpak..."
-    flatpak update -y
-    if ($status) then
-        handle_error "Flatpak" "update failed"
-    endif
-endif
-
-# Update Snap packages
-which snap > /dev/null
-if ($status == 0) then
-    echo "Updating Snap packages..."
-    sudo snap refresh
-    if ($status) then
-        handle_error "Snap" "update failed"
-    endif
-endif
-
-# Update Nix packages
-which nix-env > /dev/null
-if ($status == 0) then
-    echo "Updating Nix..."
-    nix-channel --update && nix-env -u && nix-collect-garbage -d
-    if ($status) then
-        handle_error "Nix" "update failed"
-    endif
-endif
-
-# System Package Managers
+# System Package Managers (requiring sudo)
 which apt > /dev/null
 if ($status == 0) then
     echo "Updating APT packages..."
@@ -69,7 +29,110 @@ else
             if ($status) then
                 handle_error "DNF" "update failed"
             endif
+        else
+            which yum > /dev/null
+            if ($status == 0) then
+                echo "Updating YUM packages..."
+                sudo yum update -y
+                if ($status) then
+                    handle_error "YUM" "update failed"
+                endif
+            else
+                which pacman > /dev/null
+                if ($status == 0) then
+                    echo "Updating Pacman packages..."
+                    sudo pacman -Syu --noconfirm
+                    if ($status) then
+                        handle_error "Pacman" "update failed"
+                    endif
+                else
+                    which zypper > /dev/null
+                    if ($status == 0) then
+                        echo "Updating Zypper packages..."
+                        sudo zypper refresh && sudo zypper update -y
+                        if ($status) then
+                            handle_error "Zypper" "update failed"
+                        endif
+                    else
+                        which emerge > /dev/null
+                        if ($status == 0) then
+                            echo "Updating Portage packages..."
+                            sudo emerge --sync && sudo emerge -uDN @world
+                            if ($status) then
+                                handle_error "Portage" "update failed"
+                            endif
+                        else
+                            which xbps-install > /dev/null
+                            if ($status == 0) then
+                                echo "Updating XBPS packages..."
+                                sudo xbps-install -Su
+                                if ($status) then
+                                    handle_error "XBPS" "update failed"
+                                endif
+                            else
+                                which apk > /dev/null
+                                if ($status == 0) then
+                                    echo "Updating APK packages..."
+                                    sudo apk update && sudo apk upgrade
+                                    if ($status) then
+                                        handle_error "APK" "update failed"
+                                    endif
+                                else
+                                    which pkgtool > /dev/null
+                                    if ($status == 0) then
+                                        echo "Updating Slackware packages..."
+                                        sudo slackpkg update && sudo slackpkg upgrade-all
+                                        if ($status) then
+                                            handle_error "Slackware" "update failed"
+                                        endif
+                                    endif
+                                endif
+                            endif
+                        endif
+                    endif
+                endif
+            endif
         endif
+    endif
+endif
+
+# Update Snap packages (requires sudo)
+which snap > /dev/null
+if ($status == 0) then
+    echo "Updating Snap packages..."
+    sudo snap refresh
+    if ($status) then
+        handle_error "Snap" "update failed"
+    endif
+endif
+
+# Update and upgrade Homebrew
+which brew > /dev/null
+if ($status == 0) then
+    echo "Updating Homebrew..."
+    brew update && brew upgrade && brew cleanup
+    if ($status) then
+        handle_error "Homebrew" "update failed"
+    endif
+endif
+
+# Update Flatpak packages
+which flatpak > /dev/null
+if ($status == 0) then
+    echo "Updating Flatpak..."
+    flatpak update -y
+    if ($status) then
+        handle_error "Flatpak" "update failed"
+    endif
+endif
+
+# Update Nix packages
+which nix-env > /dev/null
+if ($status == 0) then
+    echo "Updating Nix..."
+    nix-channel --update && nix-env -u && nix-collect-garbage -d
+    if ($status) then
+        handle_error "Nix" "update failed"
     endif
 endif
 
