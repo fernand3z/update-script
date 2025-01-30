@@ -102,32 +102,9 @@ if command -v pnpm &> /dev/null; then
 fi
 
 if command -v pip &> /dev/null; then
-    echo "Updating PIP and all installed Python packages..."
-
-    # Upgrade PIP itself first
+    echo "Updating PIP..."
     python3 -m pip install --upgrade pip
-
-    # Install system dependencies to prevent errors
-    if command -v apt &> /dev/null; then
-        sudo apt install -y cmake pkg-config libvirt-dev libpq-dev gobject-introspection
-    elif command -v dnf &> /dev/null; then
-        sudo dnf install -y cmake pkgconf-pkg-config libvirt-devel postgresql-devel gobject-introspection
-    elif command -v pacman &> /dev/null; then
-        sudo pacman -S --needed --noconfirm cmake pkg-config libvirt postgresql-libs gobject-introspection
-    fi
-
-    # Get a list of outdated packages and upgrade them
-    outdated_packages=$(pip list --outdated --format=columns | awk 'NR>2 {print $1}')
-
-    if [ -n "$outdated_packages" ]; then
-        echo "Upgrading: $outdated_packages"
-        echo "$outdated_packages" | xargs -n1 python3 -m pip install --upgrade
-    else
-        echo "All PIP packages are up to date."
-    fi
 fi
-
-
 
 
 if command -v poetry &> /dev/null; then
